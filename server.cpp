@@ -19,6 +19,7 @@
 #include <string>
 #include <iomanip>
 #include <map>
+#include <signal.h>
 
 #define Color_Off "\033[0m"
 #define BBlack "\033[1;30m"
@@ -88,11 +89,16 @@ class client {
         void    get_out(int from_fd, fd_set fds, int fd_max) {
             char c = -4;
             for (int j = 1; j <= fd_max; j++)
-                if (j != from_fd && FD_ISSET(j, &fds)) {
+            {
+                 if (j != from_fd && FD_ISSET(j, &fds)) {
                     write(j, name.c_str(), cursor);
                     write(j, &c, 1);
                 }
-            list_users.erase(find(list_users.begin(), list_users.end(), name));
+
+            }
+            vector <string>::iterator it = find(list_users.begin(), list_users.end(),name);
+            if (list_users.end() != it)
+                list_users.erase(it);
             FD_CLR(from_fd, &fds);
             fd_list[from_fd] = "";
             close(from_fd);
@@ -187,6 +193,7 @@ class client {
 
 int main(int argc, char *argv[])
 {
+    signal(SIGPIPE,SIG_IGN);
     list_users.push_back("everyone");
     fd_set fds, copy_fds;
     int result, str_len;
@@ -242,10 +249,8 @@ int main(int argc, char *argv[])
         timeout.tv_sec = 0;
         timeout.tv_usec = 5000;
 
-        if ((fd_num = select(fd_max + 1, &copy_fds, 0, 0, &timeout)) == -1) {
-            cerr << "select() error!\n";
-            exit(1);
-        } else if (!fd_num)
+        fd_num = select(fd_max + 1, &copy_fds, 0, 0, &timeout);
+        if (!fd_num)
             continue;
 
         for (int i = 0; i <= fd_max; i++) {
