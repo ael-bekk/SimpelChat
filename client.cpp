@@ -95,8 +95,8 @@ void *receive(void *t) {
                 
                 int sav = *(rcv + i); *(rcv + i) = 0;
 
-                if (sav == -2)       info.set_list_users(rcv);
-                else if (sav == -4)  info.remove_list_users(rcv);
+                if (sav == -2 && *rcv != ' ')       info.set_list_users(rcv);
+                else if (sav == -4 && i)  info.remove_list_users(rcv);
 
                 memset(rcv, 0, 10000); i = 0;
             } else if (*(rcv + i++) == '\n') break;
@@ -148,11 +148,11 @@ int main(int argc, char *argv[])
         {  
             c = *(ToSend + inc);
             if (c == 27) {
-            getchar();  
-            char key = getchar();
-            if (key == 'A' || key == 'B' || key == 'C' || key == 'D') 
-                continue;
-        }
+                getchar();
+                char key = getchar();
+                if (key == 'A' || key == 'B' || key == 'C' || key == 'D') 
+                    continue;
+            }
             else if (*(ToSend + inc++) == '\n') {
                 if ((string(ToSend).find(" ") == string::npos && !info.get_name().empty()) || inc == 1)
                     *(ToSend + --inc) = 0;
@@ -166,11 +166,11 @@ int main(int argc, char *argv[])
                 int pos = 0, users = 0;
                 set<string> list = info.get_list_users();
                 for (auto &x : list) {
-                    if ((pos = x.find(string(ToSend).substr(1))) != string::npos)
-                        to = x, users++;
-                    if (info.get_tab() && (pos = x.find(info.get_old_to_send().substr(1))) != string::npos)
-                        if (users == info.get_tab() % list.size())
+                    if (info.get_tab() && (pos = x.find(info.get_old_to_send().substr(1))) != string::npos && !x.empty()) {
+                        if (users++ == (info.get_tab() - 1) % list.size())
                             crnt = x;
+                    } else if (!info.get_tab() && (pos = x.find(string(ToSend).substr(1))) != string::npos && !x.empty())
+                        to = x, users++;
                 }
                 if (!info.get_tab())
                 {
@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
                         for (int x = 0; x < 30; x++) cout << "          " << flush;
                         cout << "\rusers : " << flush;
                         for (auto &x : list)
-                            if ((pos = x.find(string(ToSend).substr(1))) != string::npos)
+                            if ((pos = x.find(string(ToSend).substr(1))) != string::npos && !x.empty())
                                 cout << "@" << x.substr(0, pos) << BRed << x.substr(pos, inc - 1) << Color_Off << x.substr(pos+inc - 1) << "    " << flush;
                     }
                     if (users > 1)
@@ -202,6 +202,8 @@ int main(int argc, char *argv[])
                     info.msg_sending("\r", BGreen, string(ToSend) + " ", 1);
                     info.msg_sending("\r", BGreen, ToSend);
                 }
+                info.set_tab(0);
+                info.set_old_to_send(ToSend);
             } else
                 info.set_tab(0),
                 info.msg_sending("\r", BGreen, ToSend);
@@ -210,6 +212,7 @@ int main(int argc, char *argv[])
             info.msg_sending("\r", BBlue, ToSend, 3),
             info.set_name(ToSend);
         else
+            info.set_old_to_send(ToSend),
             info.msg_sending("\r", BBlue, ToSend, 2);
         info.set_tab(0);
         write(sock, ToSend, inc);
