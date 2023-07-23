@@ -143,9 +143,17 @@ int main(int argc, char *argv[])
         memset(ToSend, 0, 10000);
 
         cout << BGreen << "Me -> " << Color_Off << flush;
-
+        char c = 0;
         while(read(0, ToSend + inc, 1) > 0)
-            if (*(ToSend + inc++) == '\n') {
+        {  
+            c = *(ToSend + inc);
+            if (c == 27) {
+            getchar();  
+            char key = getchar();
+            if (key == 'A' || key == 'B' || key == 'C' || key == 'D') 
+                continue;
+        }
+            else if (*(ToSend + inc++) == '\n') {
                 if ((string(ToSend).find(" ") == string::npos && !info.get_name().empty()) || inc == 1)
                     *(ToSend + --inc) = 0;
                 else
@@ -197,7 +205,7 @@ int main(int argc, char *argv[])
             } else
                 info.set_tab(0),
                 info.msg_sending("\r", BGreen, ToSend);
-        
+        }
         if (info.get_name().empty())
             info.msg_sending("\r", BBlue, ToSend, 3),
             info.set_name(ToSend);
@@ -210,3 +218,6 @@ int main(int argc, char *argv[])
     tcsetattr(STDIN_FILENO, TCSANOW, &old_term);
     return 0;
 }
+
+
+ 
