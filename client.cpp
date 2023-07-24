@@ -68,7 +68,7 @@ class _info {
 
         void    msg_sending(string back_stay, string color, string to_send, short pass = 0)   {
             if (pass == 2 && !name.empty())
-                cout << back_stay << color << "Me -> \'" << Color_Off << to_send.substr(to_send.find(' ') + 1, to_send.length() - to_send.find(' ') - 2) << color << " \' " << BRed << "==>" << Color_Off << " : " << BPurple << "@" << BWhite << to_send.substr(1, to_send.find(' ')) << Color_Off << ": " << endl;
+                cout << back_stay << color << "Me -> \'" << Color_Off << to_send.substr(to_send.find(' ') + 1, to_send.length() - to_send.find(' ') - 2) << color << " \' " << BRed << "==>" << Color_Off << " : " << BPurple << *ToSend << BWhite << to_send.substr(1, to_send.find(' ')) << Color_Off << ": " << endl;
             else if (pass == 3)
                 cout << back_stay << color << "Me -> " << Color_Off << to_send << flush;
             else if (to_send.find(" ") == string::npos || pass == 1) {
@@ -77,11 +77,10 @@ class _info {
                 cout << "\r" << color << "Me -> " << Color_Off << to_send << flush;
             }
             else if (!pass) {
-                cout << back_stay << color << "Me -> \'" << Color_Off << to_send.substr(to_send.find(' ') + 1) << color << " \' " << BRed << "==>" << Color_Off << " : " << BPurple << "@" << BWhite << to_send.substr(1, to_send.find(' ')) << Color_Off << ": " << flush;
+                cout << back_stay << color << "Me -> \'" << Color_Off << to_send.substr(to_send.find(' ') + 1) << color << " \' " << BRed << "==>" << Color_Off << " : " << BPurple << *ToSend << BWhite << to_send.substr(1, to_send.find(' ')) << Color_Off << ": " << flush;
                 cout << "\r" << color << "Me -> \'" << Color_Off << to_send.substr(to_send.find(' ') + 1) << flush;
             }
         }
-
 }   info;
 
 void *receive(void *t) {
@@ -143,7 +142,7 @@ int main(int argc, char *argv[])
         memset(ToSend, 0, 10000);
 
         cout << BGreen << "Me -> " << Color_Off << flush;
-        char c = 0;
+        char c;
         while(read(0, ToSend + inc, 1) > 0)
         {  
             c = *(ToSend + inc);
@@ -158,13 +157,16 @@ int main(int argc, char *argv[])
                     *(ToSend + --inc) = 0;
                 else
                     break;
-            } else if (*ToSend != '@' && !info.get_name().empty()) {
+            } else if ((*ToSend != '@' && *ToSend != '#') && !info.get_name().empty()) {
                 *(ToSend + --inc) = 0;
-            } else if (*ToSend == '@' && (inc == 1 || *(ToSend + inc - 1) == '\t')) {
+            } else if ((*ToSend == '@' || *ToSend == '#') && (inc == 1 || *(ToSend + inc - 1) == '\t')) {
                 if (*(ToSend + inc - 1) == '\t') *(ToSend + --inc) = 0;
+                
                 string to, crnt;
                 int pos = 0, users = 0;
                 set<string> list = info.get_list_users();
+                string method = (*ToSend == '@' ? "@" : "#");
+                
                 for (auto &x : list) {
                     if (info.get_tab() && (pos = x.find(info.get_old_to_send().substr(1))) != string::npos && !x.empty()) {
                         if (users++ == (info.get_tab() - 1) % list.size())
@@ -172,6 +174,7 @@ int main(int argc, char *argv[])
                     } else if (!info.get_tab() && (pos = x.find(string(ToSend).substr(1))) != string::npos && !x.empty())
                         to = x, users++;
                 }
+
                 if (!info.get_tab())
                 {
                     info.set_old_to_send(ToSend);
@@ -181,16 +184,16 @@ int main(int argc, char *argv[])
                         cout << "\rusers : " << flush;
                         for (auto &x : list)
                             if ((pos = x.find(string(ToSend).substr(1))) != string::npos && !x.empty())
-                                cout << "@" << x.substr(0, pos) << BRed << x.substr(pos, inc - 1) << Color_Off << x.substr(pos+inc - 1) << "    " << flush;
+                                cout << method << x.substr(0, pos) << BRed << x.substr(pos, inc - 1) << Color_Off << x.substr(pos+inc - 1) << "    " << flush;
                     }
                     if (users > 1)
                         cout << endl;
                     else if (users == 1)
-                        inc = strlen(string("@" + to + " ").c_str()), memcpy(ToSend, string("@" + to + " ").c_str(), inc);
+                        inc = strlen(string(method + to + " ").c_str()), memcpy(ToSend, string(method + to + " ").c_str(), inc);
                     info.msg_sending("\r", BGreen, ToSend);
                 } else {
                     memset(ToSend, 0, 10000);
-                    inc = strlen(string("@" + crnt).c_str()), memcpy(ToSend, string("@" + crnt).c_str(), inc);
+                    inc = strlen(string(method + crnt).c_str()), memcpy(ToSend, string(method + crnt).c_str(), inc);
                     info.msg_sending("\r", BGreen, ToSend);
                 }
                 info.set_tab(info.get_tab() + 1);
