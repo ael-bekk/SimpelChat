@@ -125,13 +125,17 @@ class client {
                 string to = string(msg).substr(1, string(msg).find(' ') - 1);
                 if (to == "everyone") {
                     for (int j = 3; j <= fd_max; j++)
-                        if (FD_ISSET(j, &fds) && j != from_fd)
-                            write(j, BWhite, strlen(BWhite)),
-                            write(j, fd_list[from_fd].c_str(), strlen(fd_list[from_fd].c_str())),
-                            write(j, BRed, strlen(BRed)),
-                            write(j, " --> ", 5),
-                            write(j, Color_Off, strlen(Color_Off)),
+                        if (FD_ISSET(j, &fds) && j != from_fd) {
+                            write(j, BWhite, strlen(BWhite));
+                            if (*msg == '@')
+                                write(j, fd_list[from_fd].c_str(), strlen(fd_list[from_fd].c_str()));
+                            else
+                                write(j, "anonymous", 9);
+                            write(j, BRed, strlen(BRed));
+                            write(j, " --> ", 5);
+                            write(j, Color_Off, strlen(Color_Off));
                             write(j, msg + 10, cursor - 10);
+                        }
                     cursor = 0; memset(msg, 0, 10000); to = snd = "";
                 } else if (users[to]) {
                     int go_to = users[to];
@@ -147,13 +151,17 @@ class client {
                     write(1, "\n", 1);
                     cout << BGreen << "Me -> " << Color_Off << flush;
                     cout << ToSend << flush;
-                    if (FD_ISSET(go_to, &fds))
-                        write(go_to, BWhite, strlen(BWhite)),
-                        write(go_to, fd_list[from_fd].c_str(), strlen(fd_list[from_fd].c_str())),
-                        write(go_to, BRed, strlen(BRed)),
-                        write(go_to, " --> ", 5),
-                        write(go_to, Color_Off, strlen(Color_Off)),
+                    if (FD_ISSET(go_to, &fds)) {
+                        write(go_to, BWhite, strlen(BWhite));
+                        if (*msg == '@')
+                            write(go_to, fd_list[from_fd].c_str(), strlen(fd_list[from_fd].c_str()));
+                        else
+                            write(go_to, "anonymous", 9);
+                        write(go_to, BRed, strlen(BRed));
+                        write(go_to, " --> ", 5);
+                        write(go_to, Color_Off, strlen(Color_Off));
                         write(go_to, msg + strlen(to.c_str()) + 2, cursor - strlen(to.c_str()) - 2);
+                    }
                     cursor = 0; memset(msg, 0, 10000);
                 }
             }
