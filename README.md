@@ -54,13 +54,15 @@ The multi-user chat application operates on a simple client-server model. The se
 - The server sets up a listening socket on the specified port.
 - Clients connect to the server using TCP sockets.
 - Once connected, the clients can choose a username, and the server informs other clients about their entry.
-- Clients can send messages to everyone in the chat or send private messages to specific users using the `@username` syntax.
+- Clients can send messages to everyone in the chat or send private messages to specific users using the `@username` OR `@everyone` syntax.
+- Clients can send `anonymous` messages to everyone in the chat or send private messages to specific users using the `#username` OR `#everyone` syntax.
 - The server relays messages between clients, ensuring real-time communication.
 
 ## Features
 
 - Real-time chat with multiple users.
 - Private messaging using `@username` syntax.
+- `Tab` to switch user after typing `@` OR `#`.
 - Terminal-based interface.
 - User-friendly display of connected users.
 - Support for ANSI color codes to distinguish messages.
